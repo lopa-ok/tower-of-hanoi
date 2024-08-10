@@ -8,6 +8,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const moveCountElement = document.getElementById("moveCount");
     const timerElement = document.getElementById("timer");
     const message = document.getElementById("message");
+    const saveButton = document.getElementById("save");
+    const loadButton = document.getElementById("load");
+    const themeSelect = document.getElementById("theme");
+    const achievementElement = document.getElementById("achievements");
 
     let selectedDisk = null;
     let moveCount = 0;
@@ -15,6 +19,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let timer = null;
     let timeElapsed = 0;
     let numDisks = 3;
+    let achievements = [];
 
     const moveSound = new Audio("move.wav");
     const winSound = new Audio("win.wav");
@@ -78,6 +83,7 @@ document.addEventListener("DOMContentLoaded", () => {
             clearInterval(timer);
             message.textContent = "You won!";
             winSound.play();
+            recordAchievement();
         }
     };
 
@@ -118,6 +124,62 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 1000);
     };
 
+    const saveGame = () => {
+        const gameState = {
+            moveCount,
+            timeElapsed,
+            numDisks,
+            towers: Array.from(towers).map(tower => {
+                return Array.from(tower.children).map(disk => ({
+                    size: disk.getAttribute("data-size"),
+                    tower: disk.getAttribute("data-tower")
+                }));
+            }),
+            achievements
+        };
+        localStorage.setItem("towerOfHanoiState", JSON.stringify(gameState));
+    };
+
+    const loadGame = () => {
+        const savedState = JSON.parse(localStorage.getItem("towerOfHanoiState"));
+        if (savedState) {
+            moveCount = savedState.moveCount;
+            timeElapsed = savedState.timeElapsed;
+            numDisks = savedState.numDisks;
+            achievements = savedState.achievements;
+            updateMoveCount();
+            timerElement.textContent = `${Math.floor(timeElapsed / 60)}:${timeElapsed % 60 < 10 ? "0" : ""}${timeElapsed % 60}`;
+            savedState.towers.forEach((towerState, index) => {
+                const tower = towers[index];
+                tower.innerHTML = "";
+                towerState.forEach(diskState => {
+                    const disk = document.createElement("div");
+                    disk.classList.add("disk");
+                    disk.style.width = `${100 + (diskState.size - 1) * 30}px`;
+                    disk.setAttribute("data-size", diskState.size);
+                    disk.setAttribute("data-tower", `tower${index + 1}`);
+                    tower.appendChild(disk);
+                });
+            });
+            displayAchievements();
+        }
+    };
+
+    const applyTheme = (theme) => {
+        document.body.className = theme;
+    };
+
+    const recordAchievement = () => {
+        if (numDisks === 3 && moveCount <= 7) {
+            achievements.push("Quick 3-Disks Solve");
+        }
+        displayAchievements();
+    };
+
+    const displayAchievements = () => {
+        achievementElement.innerHTML = achievements.map(ach => `<li>${ach}</li>`).join("");
+    };
+
     const resetGame = () => {
         clearInterval(timer);
         timer = null;
@@ -125,6 +187,7 @@ document.addEventListener("DOMContentLoaded", () => {
         timerElement.textContent = "0:00";
         moveCount = 0;
         moveHistory = [];
+        achievements = [];
         updateMoveCount();
         createDisks();
     };
@@ -136,11 +199,15 @@ document.addEventListener("DOMContentLoaded", () => {
     resetButton.addEventListener("click", () => resetGame());
     undoButton.addEventListener("click", () => undoMove());
     hintButton.addEventListener("click", () => provideHint());
+    saveButton.addEventListener("click", () => saveGame());
+    loadButton.addEventListener("click", () => loadGame());
+    themeSelect.addEventListener("change", () => applyTheme(themeSelect.value));
 
     startButton.addEventListener("click", () => {
         numDisks = parseInt(difficultySelect.value);
         resetGame();
     });
 
-    createDisks();
+    resetGame();
+    loadGame();
 });
