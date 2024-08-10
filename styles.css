@@ -1,0 +1,50 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background-color: #f0f0f0;
+    margin: 0;
+    padding: 20px;
+}
+
+h1 {
+    font-size: 2em;
+    margin-bottom: 20px;
+}
+
+.towers {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.tower {
+    width: 150px;
+    height: 300px;
+    margin: 0 10px;
+    background-color: #ccc;
+    border: 2px solid #333;
+    position: relative;
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: center;
+}
+
+.disk {
+    width: 100px;
+    height: 30px;
+    margin-bottom: 5px;
+    background-color: #ff5733;
+    border: 2px solid #333;
+    cursor: pointer;
+}
+
+#message {
+    font-size: 1.2em;
+    margin-bottom: 20px;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 1em;
+    cursor: pointer;
+}
