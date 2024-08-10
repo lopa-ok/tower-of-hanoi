@@ -8,6 +8,15 @@
 </head>
 <body>
     <h1>Tower of Hanoi</h1>
+    <div>
+        <label for="difficulty">Select Difficulty: </label>
+        <select id="difficulty">
+            <option value="3">3 Disks</option>
+            <option value="4">4 Disks</option>
+            <option value="5">5 Disks</option>
+        </select>
+        <button id="start">Start Game</button>
+    </div>
     <div class="towers">
         <div class="tower" id="tower1"></div>
         <div class="tower" id="tower2"></div>
@@ -15,10 +24,10 @@
     </div>
     <p id="message">Move all the disks from Tower 1 to Tower 3!</p>
     <p>Moves: <span id="moveCount">0</span></p>
+    <p>Time: <span id="timer">0:00</span></p>
+    <button id="hint">Hint</button>
     <button id="undo">Undo Move</button>
     <button id="reset">Reset</button>
-    <button id="hint">Hint</button>
-
     <script src="script.js"></script>
 </body>
 </html>

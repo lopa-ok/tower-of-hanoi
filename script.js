@@ -1,16 +1,27 @@
 document.addEventListener("DOMContentLoaded", () => {
     const towers = document.querySelectorAll(".tower");
+    const startButton = document.getElementById("start");
     const resetButton = document.getElementById("reset");
     const undoButton = document.getElementById("undo");
     const hintButton = document.getElementById("hint");
+    const difficultySelect = document.getElementById("difficulty");
     const moveCountElement = document.getElementById("moveCount");
+    const timerElement = document.getElementById("timer");
     const message = document.getElementById("message");
 
     let selectedDisk = null;
     let moveCount = 0;
     let moveHistory = [];
+    let timer = null;
+    let timeElapsed = 0;
+    let numDisks = 3;
 
-    const createDisks = (numDisks = 3) => {
+    const moveSound = new Audio("move.wav");
+    const winSound = new Audio("win.wav");
+    const errorSound = new Audio("error.wav");
+
+    const createDisks = () => {
+        towers.forEach(tower => tower.innerHTML = "");
         for (let i = numDisks; i > 0; i--) {
             const disk = document.createElement("div");
             disk.classList.add("disk");
@@ -22,6 +33,8 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     const moveDisk = (tower) => {
+        if (!timer) startTimer();
+
         if (selectedDisk) {
             const topDisk = tower.lastElementChild;
             if (!topDisk || parseInt(selectedDisk.getAttribute("data-size")) < parseInt(topDisk.getAttribute("data-size"))) {
@@ -32,8 +45,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 moveCount++;
                 updateMoveCount();
                 checkWin();
+                moveSound.play();
             } else {
                 message.textContent = "Invalid move!";
+                errorSound.play();
             }
         } else {
             selectedDisk = tower.lastElementChild;
@@ -59,8 +74,10 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     const checkWin = () => {
-        if (towers[2].childElementCount === 3) {
+        if (towers[2].childElementCount === numDisks) {
+            clearInterval(timer);
             message.textContent = "You won!";
+            winSound.play();
         }
     };
 
@@ -76,7 +93,6 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     const provideHint = () => {
-        const numDisks = towers[0].childElementCount + towers[1].childElementCount + towers[2].childElementCount;
         const optimalMoves = getOptimalMove(numDisks, "tower1", "tower3", "tower2");
 
         for (const move of optimalMoves) {
@@ -93,21 +109,38 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    towers.forEach(tower => {
-        tower.addEventListener("click", () => moveDisk(tower));
-    });
+    const startTimer = () => {
+        timer = setInterval(() => {
+            timeElapsed++;
+            const minutes = Math.floor(timeElapsed / 60);
+            const seconds = timeElapsed % 60;
+            timerElement.textContent = `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+        }, 1000);
+    };
 
-    resetButton.addEventListener("click", () => {
-        towers.forEach(tower => tower.innerHTML = "");
-        message.textContent = "Move all the disks from Tower 1 to Tower 3!";
+    const resetGame = () => {
+        clearInterval(timer);
+        timer = null;
+        timeElapsed = 0;
+        timerElement.textContent = "0:00";
         moveCount = 0;
         moveHistory = [];
         updateMoveCount();
         createDisks();
+    };
+
+    towers.forEach(tower => {
+        tower.addEventListener("click", () => moveDisk(tower));
     });
 
+    resetButton.addEventListener("click", () => resetGame());
     undoButton.addEventListener("click", () => undoMove());
     hintButton.addEventListener("click", () => provideHint());
+
+    startButton.addEventListener("click", () => {
+        numDisks = parseInt(difficultySelect.value);
+        resetGame();
+    });
 
     createDisks();
 });
